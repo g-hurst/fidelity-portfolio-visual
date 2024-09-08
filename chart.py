@@ -50,7 +50,7 @@ def map_to_sectors(positions:dict, df_sectors:pd.DataFrame) -> dict:
     for symbol, val in positions.items():
         if symbol in df_sectors['Symbol'].values:
             sector = df_sectors[df_sectors['Symbol'] == symbol]['Sector'].values[0]
-            if data.get(symbol): data[sector] += val
+            if data.get(sector): data[sector] += val
             else:                data[sector]  = val
         else:
             print(f'error: no sector found for {symbol}')

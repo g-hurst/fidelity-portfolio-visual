@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import re
 import os
 import datetime
@@ -24,45 +25,73 @@ def load_portfolio(path:str) -> pd.DataFrame:
 def load_sectors(path:str) -> pd.DataFrame:
     return pd.read_csv(path)
 
+def get_investimet_type(symbol):
+    if symbol in ['Pending Activity']:
+        return np.NaN
+    elif symbol in ['SPAXX**',]:
+        return 'Cash'
+    elif (len(symbol)==5 and symbol[0]=='F' and symbol[-1]=='X'):
+        return 'Fund'
+    else:
+        return 'Stock'
+
 def select_positions(df:pd.DataFrame, exclude_cash:bool=True, exclude_funds:bool=False) -> dict:
-    def exclude_symbol(symbol):
-        excludes = ['Pending Activity']
-        if exclude_cash:
-            excludes.append('SPAXX**')
-        if exclude_funds and (len(symbol)==5 and symbol[0]=='F' and symbol[-1]=='X'):
-                return True
-
-        return symbol in excludes
-
-    selection = df[['Symbol', 'Current Value']]
+    selection = df[['Symbol', 'Current Value', 'Category']]
     selection = selection.dropna()
     data = OrderedDict()
-    for (symbol, val) in selection.itertuples(index=False):
-        if not exclude_symbol(symbol):
-            val = float(val.replace('$',''))
+    for (symbol, val, cat) in selection.itertuples(index=False):
+        if cat=='Stock' or (cat=='Cash' and not exclude_cash) or (cat=='Fund' and not exclude_funds):
             if data.get(symbol): data[symbol] += val
             else:                data[symbol]  = val
 
     return data
 
-def map_to_sectors(positions:dict, df_sectors:pd.DataFrame) -> dict:
+def get_sector(symbol, df_sectors):
+    if symbol in df_sectors['Symbol'].values:
+        return df_sectors[df_sectors['Symbol'] == symbol]['Sector'].values[0]
+    else:
+        return np.NaN
+
+def select_sectors(df:pd.DataFrame) -> dict:
+    selection = df[['Current Value', 'Sector']]
+    selection = selection.dropna()
     data = OrderedDict()
-    for symbol, val in positions.items():
-        if symbol in df_sectors['Symbol'].values:
-            sector = df_sectors[df_sectors['Symbol'] == symbol]['Sector'].values[0]
-            if data.get(sector): data[sector] += val
-            else:                data[sector]  = val
-        else:
-            print(f'error: no sector found for {symbol}')
+    for (val, sect) in selection.itertuples(index=False):
+        if data.get(sect): data[sect] += val
+        else:              data[sect]  = val
     return data
 
-if __name__ == '__main__':
-    exports_path = 'portfolio_exports'   
-    df_portfolio = load_portfolio(exports_path)
 
+if __name__ == '__main__':
+    # load stocks and sector mappings into data frames
+    exports_path = 'portfolio_exports'   
     sectors_path = 'sectors/nasdaq_screener_1725826524142.csv'
+    df_portfolio = load_portfolio(exports_path)
     df_sectors   = load_sectors(sectors_path)
 
-    all_positions = select_positions(df_portfolio, exclude_funds=True)
-    all_sectors  = map_to_sectors(all_positions, df_sectors)
-    plot_stocks_gui(all_positions, all_sectors)
+    # Clean the data and add some columns to the df
+    df_portfolio.drop(['Last Price Change',
+                       'Today\'s Gain/Loss Dollar', 
+                       'Today\'s Gain/Loss Percent',
+                       'Total Gain/Loss Dollar', 
+                       'Total Gain/Loss Percent',
+                       'Percent Of Account', 
+                       'Cost Basis Total', 
+                       'Average Cost Basis', 
+                       'Type'], axis=1, inplace=True)
+    df_portfolio = df_portfolio[df_portfolio['Symbol'] != 'Pending Activity']
+    df_portfolio = df_portfolio.dropna(subset=['Symbol'])
+    df_portfolio['Current Value'] = df_portfolio['Current Value'].apply(lambda x: float(x.replace('$','')))
+    df_portfolio['Category']      = df_portfolio['Symbol'].apply(get_investimet_type)
+    df_portfolio['Sector']        = df_portfolio['Symbol'].apply(lambda x: get_sector(x, df_sectors))
+    
+    print(df_portfolio)
+
+    # create basic plot of just stocks and corresponding sectors
+    stocks        = select_positions(df_portfolio, exclude_funds=True)
+    stock_sectors = select_sectors(df_portfolio)
+    plot_stocks_gui(stocks, stock_sectors)
+
+
+
+    

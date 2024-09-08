@@ -4,7 +4,7 @@ import os
 import datetime
 from collections import OrderedDict
 
-from plotting import plot_positions_gui
+from plotting import plot_stocks_gui
 
 # TODO: make this more resilliant (will crash if no file is found, but I am currently lazy and accept this tech debt)
 def load_portfolio(path:str) -> pd.DataFrame:
@@ -64,7 +64,5 @@ if __name__ == '__main__':
     df_sectors   = load_sectors(sectors_path)
 
     all_positions = select_positions(df_portfolio, exclude_funds=True)
-    plot_positions_gui(all_positions)
-
     all_sectors  = map_to_sectors(all_positions, df_sectors)
-    plot_positions_gui(all_sectors)
+    plot_stocks_gui(all_positions, all_sectors)

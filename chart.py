@@ -25,15 +25,18 @@ def load_portfolio(path:str) -> pd.DataFrame:
 def load_sectors(path:str) -> pd.DataFrame:
     return pd.read_csv(path)
 
-def get_investimet_type(symbol):
+def get_investimet_type(symbol:str, df_sectors:pd.DataFrame) -> str:
     if symbol in ['Pending Activity']:
-        return np.NaN
+        return np.nan
     elif symbol in ['SPAXX**',]:
         return 'Cash'
-    elif (len(symbol)==5 and symbol[0]=='F' and symbol[-1]=='X'):
-        return 'Fund'
-    else:
+    elif symbol in df_sectors['Symbol'].values:
         return 'Stock'
+    elif (len(symbol)==5 and symbol[0]=='F' and symbol[-1]=='X'):
+        return 'Fidelity Fund'
+    else:
+        return 'Other'
+
 
 def select_positions(df:pd.DataFrame, exclude_cash:bool=True, exclude_funds:bool=False) -> dict:
     selection = df[['Symbol', 'Current Value', 'Category']]
@@ -50,7 +53,7 @@ def get_sector(symbol, df_sectors):
     if symbol in df_sectors['Symbol'].values:
         return df_sectors[df_sectors['Symbol'] == symbol]['Sector'].values[0]
     else:
-        return np.NaN
+        return np.nan
 
 def select_sectors(df:pd.DataFrame) -> dict:
     selection = df[['Current Value', 'Sector']]
@@ -82,7 +85,7 @@ if __name__ == '__main__':
     df_portfolio = df_portfolio[df_portfolio['Symbol'] != 'Pending Activity']
     df_portfolio = df_portfolio.dropna(subset=['Symbol'])
     df_portfolio['Current Value'] = df_portfolio['Current Value'].apply(lambda x: float(x.replace('$','')))
-    df_portfolio['Category']      = df_portfolio['Symbol'].apply(get_investimet_type)
+    df_portfolio['Category']      = df_portfolio['Symbol'].apply(lambda x: get_investimet_type(x, df_sectors))
     df_portfolio['Sector']        = df_portfolio['Symbol'].apply(lambda x: get_sector(x, df_sectors))
     
     print(df_portfolio)

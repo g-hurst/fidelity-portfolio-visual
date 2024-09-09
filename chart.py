@@ -1,11 +1,12 @@
 import pandas as pd
 import numpy as np
+
 import re
 import os
 import datetime
 from collections import OrderedDict
 
-from plotting import plot_stocks_gui
+from plotting import (plot_stocks_gui, plot_sankey)
 
 # TODO: make this more resilliant (will crash if no file is found, but I am currently lazy and accept this tech debt)
 def load_portfolio(path:str) -> pd.DataFrame:
@@ -95,6 +96,6 @@ if __name__ == '__main__':
     stock_sectors = select_sectors(df_portfolio)
     plot_stocks_gui(stocks, stock_sectors)
 
-
+    plot_sankey(df_portfolio)
 
     

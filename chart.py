@@ -91,11 +91,14 @@ if __name__ == '__main__':
     
     print(df_portfolio)
 
+    # create sankey to visulize account breakdowns
+    plot_sankey(df_portfolio, excluded_accts=['Cash Management (Individual - TOD)',])
+
     # create basic plot of just stocks and corresponding sectors
     stocks        = select_positions(df_portfolio, exclude_funds=True)
     stock_sectors = select_sectors(df_portfolio)
     plot_stocks_gui(stocks, stock_sectors)
 
-    plot_sankey(df_portfolio)
+
 
     

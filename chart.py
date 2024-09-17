@@ -118,6 +118,8 @@ if __name__ == '__main__':
         watchlist['other'] = {
             'goal': 1 - sum([v['goal'] for v in watchlist.values()])
         }
+        watchlist['other']['stocks'] =  list(set(df_stocks['Symbol'].unique()) - set(stock for v in watchlist.values() if v.get('stocks') for stock in v.get('stocks')))
+
 
         # update watchlist dict with actual-percentage of categories and 
         # the current value of each category
@@ -147,7 +149,7 @@ if __name__ == '__main__':
         for i, data in enumerate(watchlist.values()):
             data['add'] = result.x[i]
 
-        # print output real pretty
+        # print current breakdown of portfolio funds based on categories
         for cat, data in watchlist.items():
             print(
                 '{:<20} ({:6} %) {:8} + {:8} = {:8} ({:6} %)'.format(
@@ -159,4 +161,11 @@ if __name__ == '__main__':
                     round(data['goal']*100, 2)
                     )
             )
-    
+        
+        # print a more in depth break based on individual stocks
+        for cat, data in watchlist.items():
+            print(f'\n{cat}:')
+            for stock in sorted(data.get('stocks')):
+                value = df_stocks[df_stocks['Symbol'] == stock]['Current Value'].sum()
+                percentage = value / stocks_value
+                print('  {:6} ${:7} ({} %) '.format(stock, round(value, 2), round(percentage*100, 2)))

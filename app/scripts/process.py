@@ -8,8 +8,6 @@ import datetime
 from collections import OrderedDict
 import json
 
-from plotting import (plot_stocks_gui, plot_sankey)
-
 # TODO: make this more resilliant (will crash if no file is found, but I am currently lazy and accept this tech debt)
 def load_portfolio(path:str) -> pd.DataFrame:
     match_str = r'Portfolio_Positions_([A-Z,a-z]{3,4}-\d{2}-\d{4})\.csv'
@@ -40,13 +38,14 @@ def get_investimet_type(symbol:str, df_sectors:pd.DataFrame) -> str:
     else:
         return 'Other'
 
-
-def select_positions(df:pd.DataFrame, exclude_cash:bool=True, exclude_funds:bool=False) -> dict:
+def select_positions(df:pd.DataFrame, exclude_cash:bool=True, category:str='All') -> dict:
     selection = df[['Symbol', 'Current Value', 'Category']]
     selection = selection.dropna()
     data = OrderedDict()
     for (symbol, val, cat) in selection.itertuples(index=False):
-        if cat=='Stock' or (cat=='Cash' and not exclude_cash) or (cat=='Fund' and not exclude_funds):
+        if exclude_cash and cat=='Cash':
+            continue
+        elif (category=='All') or (category==cat):
             if data.get(symbol): data[symbol] += val
             else:                data[symbol]  = val
 
@@ -67,10 +66,10 @@ def select_sectors(df:pd.DataFrame) -> dict:
         else:              data[sect]  = val
     return data
 
-if __name__ == '__main__':
+def make_dataframe():
     # load stocks and sector mappings into data frames
-    exports_path = 'portfolio_exports'   
-    sectors_path = 'sectors/nasdaq_screener_1725826524142.csv'
+    exports_path = 'app/data/portfolio_exports'   
+    sectors_path = 'app/data/sectors/nasdaq_screener_1725826524142.csv'
     df_portfolio = load_portfolio(exports_path)
     df_sectors   = load_sectors(sectors_path)
 
@@ -90,16 +89,13 @@ if __name__ == '__main__':
     df_portfolio['Category']      = df_portfolio['Symbol'].apply(lambda x: get_investimet_type(x, df_sectors))
     df_portfolio['Sector']        = df_portfolio['Symbol'].apply(lambda x: get_sector(x, df_sectors))
     
-    # create sankey to visulize account breakdowns
-    plot_sankey(df_portfolio, excluded_accts=['Cash Management (Individual - TOD)',])
+    return df_portfolio
 
-    # create basic plot of just stocks and corresponding sectors
-    stocks        = select_positions(df_portfolio, exclude_funds=True)
-    stock_sectors = select_sectors(df_portfolio)
-    plot_stocks_gui(stocks, stock_sectors)
-
-    watchlist_path = 'watchlist.json'
-    if watchlist_path in os.listdir():
+if __name__ == '__main__':
+    df_portfolio = make_dataframe()
+    
+    watchlist_path = 'app/data/watchlist.json'
+    if os.path.isfile(watchlist_path):
         # load watchlist data from json file
         with open(watchlist_path, 'r') as f:
             watchlist = json.load(f)      
@@ -110,7 +106,6 @@ if __name__ == '__main__':
             'goal': 1 - sum([v['goal'] for v in watchlist.values()])
         }
         watchlist['other']['stocks'] =  list(set(df_stocks['Symbol'].unique()) - set(stock for v in watchlist.values() if v.get('stocks') for stock in v.get('stocks')))
-
 
         # update watchlist dict with actual-percentage of categories and 
         # the current value of each category

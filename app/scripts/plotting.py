@@ -65,7 +65,7 @@ def plot_stocks_gui(stocks, sectors):
 
     plt.show()
 
-def plot_sankey(df:pd.DataFrame, excluded_accts:list=None):
+def get_sankey_data(df:pd.DataFrame, excluded_accts:list=None):
     if excluded_accts:
         df = df[~df['Account Name'].isin(excluded_accts)]
     
@@ -98,9 +98,9 @@ def plot_sankey(df:pd.DataFrame, excluded_accts:list=None):
         targets.append(labels.index(sym))
         values.append(val)
 
-    fig = go.Figure(data=[go.Sankey(
+    plot = go.Sankey(
         node = dict(
-        pad       = 15,
+        pad       = 100,
         thickness = 20,
         line  = dict(color = "black", width = 0.5),
         label = labels,
@@ -110,7 +110,6 @@ def plot_sankey(df:pd.DataFrame, excluded_accts:list=None):
         source = sources, 
         target = targets,
         value  = values
-    ))])
+    ))
 
-    fig.update_layout(title_text="Portfolio breakdown", font_size=10)
-    fig.show()
+    return plot

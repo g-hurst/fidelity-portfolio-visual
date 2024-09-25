@@ -10,6 +10,11 @@ import json
 
 # TODO: make this more resilliant (will crash if no file is found, but I am currently lazy and accept this tech debt)
 def load_portfolio(path:str) -> pd.DataFrame:
+    
+    if not os.path.exists(path):
+        os.makedirs(path)
+        return None 
+    
     match_str = r'Portfolio_Positions_([A-Z,a-z]{3,4}-\d{2}-\d{4})\.csv'
     files = os.listdir(path)
     dated_files = []
@@ -21,7 +26,11 @@ def load_portfolio(path:str) -> pd.DataFrame:
                 (os.path.join(path, f), date)
             )
     dated_files.sort(key=lambda x: x[1], reverse=True)
-    return pd.read_csv(dated_files[0][0])        
+    
+    if len(dated_files) > 0:
+        return pd.read_csv(dated_files[0][0])  
+    else:
+        return None
 
 def load_sectors(path:str) -> pd.DataFrame:
     return pd.read_csv(path)
@@ -71,23 +80,23 @@ def make_dataframe():
     exports_path = 'data/portfolio_exports'   
     sectors_path = 'data/sectors/nasdaq_screener_1725826524142.csv'
     df_portfolio = load_portfolio(exports_path)
-    df_sectors   = load_sectors(sectors_path)
-
-    # Clean the data and add some columns to the df
-    df_portfolio.drop(['Last Price Change',
-                       'Today\'s Gain/Loss Dollar', 
-                       'Today\'s Gain/Loss Percent',
-                       'Total Gain/Loss Dollar', 
-                       'Total Gain/Loss Percent',
-                       'Percent Of Account', 
-                       'Cost Basis Total', 
-                       'Average Cost Basis', 
-                       'Type'], axis=1, inplace=True)
-    df_portfolio = df_portfolio[df_portfolio['Symbol'] != 'Pending Activity']
-    df_portfolio = df_portfolio.dropna(subset=['Symbol'])
-    df_portfolio['Current Value'] = df_portfolio['Current Value'].apply(lambda x: float(x.replace('$','')))
-    df_portfolio['Category']      = df_portfolio['Symbol'].apply(lambda x: get_investimet_type(x, df_sectors))
-    df_portfolio['Sector']        = df_portfolio['Symbol'].apply(lambda x: get_sector(x, df_sectors))
+    if df_portfolio:
+        df_sectors   = load_sectors(sectors_path)
+        # Clean the data and add some columns to the df
+        df_portfolio.drop(['Last Price Change',
+                        'Today\'s Gain/Loss Dollar', 
+                        'Today\'s Gain/Loss Percent',
+                        'Total Gain/Loss Dollar', 
+                        'Total Gain/Loss Percent',
+                        'Percent Of Account', 
+                        'Cost Basis Total', 
+                        'Average Cost Basis', 
+                        'Type'], axis=1, inplace=True)
+        df_portfolio = df_portfolio[df_portfolio['Symbol'] != 'Pending Activity']
+        df_portfolio = df_portfolio.dropna(subset=['Symbol'])
+        df_portfolio['Current Value'] = df_portfolio['Current Value'].apply(lambda x: float(x.replace('$','')))
+        df_portfolio['Category']      = df_portfolio['Symbol'].apply(lambda x: get_investimet_type(x, df_sectors))
+        df_portfolio['Sector']        = df_portfolio['Symbol'].apply(lambda x: get_sector(x, df_sectors))
     
     return df_portfolio
 

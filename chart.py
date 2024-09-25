@@ -67,12 +67,6 @@ def select_sectors(df:pd.DataFrame) -> dict:
         else:              data[sect]  = val
     return data
 
-def get_watchlist_category(watchlist, symbol):
-    for category, data in watchlist.items():
-        if symbol in data['stocks']:
-            return category
-    return "other"
-
 if __name__ == '__main__':
     # load stocks and sector mappings into data frames
     exports_path = 'portfolio_exports'   
@@ -108,13 +102,10 @@ if __name__ == '__main__':
     if watchlist_path in os.listdir():
         # load watchlist data from json file
         with open(watchlist_path, 'r') as f:
-            watchlist = json.load(f)
-
-        # update df with watchlist categories
-        df_stocks = df_portfolio[df_portfolio['Category'] == 'Stock']
-        df_stocks['Watchlist Category'] = df_stocks['Symbol'].apply(lambda x: get_watchlist_category(watchlist, x))
+            watchlist = json.load(f)      
         
         # calculate stock percentage of non-watchlist positions
+        df_stocks = df_portfolio[df_portfolio['Category'] == 'Stock']
         watchlist['other'] = {
             'goal': 1 - sum([v['goal'] for v in watchlist.values()])
         }
@@ -125,7 +116,7 @@ if __name__ == '__main__':
         # the current value of each category
         stocks_value = df_stocks['Current Value'].sum()
         for cat, data in watchlist.items():
-            data['value']  = df_stocks[df_stocks['Watchlist Category'] == cat]['Current Value'].sum()
+            data['value']  = df_stocks[df_stocks['Symbol'].isin(data['stocks'])]['Current Value'].sum()
             data['actual'] = data['value'] / stocks_value
 
         # define function to minimize solving for X
@@ -145,7 +136,7 @@ if __name__ == '__main__':
 
         # solve for minimium X in objective constrained to all elements in X > 0
         # update the watchlist dict once calulations are complete
-        result = minimize(objective, [0,0,0], args=(watchlist,),bounds=[(0, None)])
+        result = minimize(objective, np.zeros(len(watchlist)+1), args=(watchlist,),bounds=[(0, None)])
         for i, data in enumerate(watchlist.values()):
             data['add'] = result.x[i]
 

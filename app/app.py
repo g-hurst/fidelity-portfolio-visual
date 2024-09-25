@@ -1,6 +1,5 @@
-from dash import Dash, dcc, html, dash_table, Input, Output
+from dash import Dash, dcc, html, Input, Output
 import plotly.express as px
-import plotly.graph_objects as go
 
 from scripts.process import make_dataframe
 from scripts.plotting import get_sankey_data
@@ -138,4 +137,4 @@ def update_positions_bar(filter, sort_type):
   return fig
 
 if __name__ == '__main__':
-  app.run_server(debug=False)
+  app.run_server(debug=False, host='0.0.0.0', port=8050)

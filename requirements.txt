@@ -1,5 +1,8 @@
 plotly
+dash
+
 matplotlib
+
 pandas
 numpy
-dash
+scipy

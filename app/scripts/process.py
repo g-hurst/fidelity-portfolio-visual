@@ -68,8 +68,8 @@ def select_sectors(df:pd.DataFrame) -> dict:
 
 def make_dataframe():
     # load stocks and sector mappings into data frames
-    exports_path = 'app/data/portfolio_exports'   
-    sectors_path = 'app/data/sectors/nasdaq_screener_1725826524142.csv'
+    exports_path = 'data/portfolio_exports'   
+    sectors_path = 'data/sectors/nasdaq_screener_1725826524142.csv'
     df_portfolio = load_portfolio(exports_path)
     df_sectors   = load_sectors(sectors_path)
 
@@ -94,7 +94,7 @@ def make_dataframe():
 if __name__ == '__main__':
     df_portfolio = make_dataframe()
     
-    watchlist_path = 'app/data/watchlist.json'
+    watchlist_path = 'data/watchlist.json'
     if os.path.isfile(watchlist_path):
         # load watchlist data from json file
         with open(watchlist_path, 'r') as f:

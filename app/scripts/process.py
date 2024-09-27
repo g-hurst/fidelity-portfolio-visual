@@ -8,24 +8,45 @@ import os
 import datetime
 from collections import OrderedDict
 import json
+import base64
 
-def load_portfolio(path:str) -> pd.DataFrame:   
+def regex_match_name(f_name):
+    match_str = r'Portfolio_Positions_([A-Z,a-z]{3,4}-\d{2}-\d{4})\.csv'
+    return re.search(match_str, f_name)
+
+def save_csv(content:str, exports_path:str, f_name:str):
+    content_type, content_string = content.split(',')
+    if ('text/csv' in content_type) and regex_match_name(f_name):
+        content_string = base64.b64decode(content_string)
+        path_out = os.path.join(exports_path, f_name)
+        with open(path_out, 'w', encoding='utf-8') as f_out:
+            f_out.write(content_string.decode('utf-8'))
+        return True
+    return False
+
+def load_portfolio(path:str, f_name:str=None) -> pd.DataFrame:   
     if not os.path.exists(path):
         os.makedirs(path)
         return None 
     
-    match_str = r'Portfolio_Positions_([A-Z,a-z]{3,4}-\d{2}-\d{4})\.csv'
-    files = os.listdir(path)
     dated_files = []
-    for f in files:
-        match = re.search(match_str, f)
-        if match:
-            date = datetime.datetime.strptime(match.group(1), '%b-%d-%Y')
-            dated_files.append(
-                (os.path.join(path, f), date)
-            )
-    dated_files.sort(key=lambda x: x[1], reverse=True)
-    
+    # get files and sort by date
+    if f_name is None:
+        files = os.listdir(path)
+        for f in files:
+            match = regex_match_name(f)
+            if match:
+                date = datetime.datetime.strptime(match.group(1), '%b-%d-%Y')
+                dated_files.append(
+                    (os.path.join(path, f), date)
+                )
+        dated_files.sort(key=lambda x: x[1], reverse=True)
+    # get specified file from parameter if not None
+    else:
+        # sus tech debt things bcz lazy adding date here
+        dated_files.append((os.path.join(path, f_name), None))
+
+    # return a pandas dataframe of the most recent file
     if len(dated_files) > 0:
         return pd.read_csv(dated_files[0][0])  
     else:
@@ -46,39 +67,41 @@ def get_investimet_type(symbol:str, df_sectors:pd.DataFrame) -> str:
     else:
         return 'Other'
 
-def select_positions(df:pd.DataFrame, exclude_cash:bool=True, category:str='All') -> dict:
-    selection = df[['Symbol', 'Current Value', 'Category']]
-    selection = selection.dropna()
-    data = OrderedDict()
-    for (symbol, val, cat) in selection.itertuples(index=False):
-        if exclude_cash and cat=='Cash':
-            continue
-        elif (category=='All') or (category==cat):
-            if data.get(symbol): data[symbol] += val
-            else:                data[symbol]  = val
+# commented out for now in case needed later
+# def select_positions(df:pd.DataFrame, exclude_cash:bool=True, category:str='All') -> dict:
+#     selection = df[['Symbol', 'Current Value', 'Category']]
+#     selection = selection.dropna()
+#     data = OrderedDict()
+#     for (symbol, val, cat) in selection.itertuples(index=False):
+#         if exclude_cash and cat=='Cash':
+#             continue
+#         elif (category=='All') or (category==cat):
+#             if data.get(symbol): data[symbol] += val
+#             else:                data[symbol]  = val
 
-    return data
+#     return data
 
 def get_sector(symbol, df_sectors):
     if symbol in df_sectors['Symbol'].values:
         return df_sectors[df_sectors['Symbol'] == symbol]['Sector'].values[0]
     else:
         return np.nan
+    
 
-def select_sectors(df:pd.DataFrame) -> dict:
-    selection = df[['Current Value', 'Sector']]
-    selection = selection.dropna()
-    data = OrderedDict()
-    for (val, sect) in selection.itertuples(index=False):
-        if data.get(sect): data[sect] += val
-        else:              data[sect]  = val
-    return data
+# commented out for now in case needed later
+# def select_sectors(df:pd.DataFrame) -> dict:
+#     selection = df[['Current Value', 'Sector']]
+#     selection = selection.dropna()
+#     data = OrderedDict()
+#     for (val, sect) in selection.itertuples(index=False):
+#         if data.get(sect): data[sect] += val
+#         else:              data[sect]  = val
+#     return data
 
-def make_dataframe():
-    # load stocks and sector mappings into data frames
-    exports_path = 'data/portfolio_exports'   
+def make_dataframe(exports_path:str, f_name:str=None) -> pd.DataFrame:
+    # load stocks and sector mappings into data frames  
     sectors_path = 'data/sectors/nasdaq_screener_1725826524142.csv'
-    df_portfolio = load_portfolio(exports_path)
+    df_portfolio = load_portfolio(exports_path, f_name=f_name)
     if df_portfolio is not None:
         df_sectors   = load_sectors(sectors_path)
         # Clean the data and add some columns to the df

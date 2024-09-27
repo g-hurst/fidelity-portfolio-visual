@@ -1,16 +1,16 @@
 from dash import Dash, dcc, html, Input, Output, State
 import plotly.express as px
 
-from scripts.process import make_dataframe
+from scripts.process import make_dataframe, save_csv
 from scripts.plotting import get_sankey_data
 
-
+exports_path = 'data/portfolio_exports' 
 df_portfolio = None 
 
-def get_charts():
+def get_charts(exports_path:str, f_name:str) -> list:
   global df_portfolio
 
-  df_portfolio = make_dataframe()
+  df_portfolio = make_dataframe(exports_path, f_name)
   pie_category_fig = px.pie(df_portfolio, names='Category', values='Current Value')
   pie_category_fig.update_layout(
     title=f'Investment Categories',
@@ -133,10 +133,15 @@ app.layout = html.Div(
 
 @app.callback(Output('charts', 'children'),
               Input('upload-data', 'contents'),
-              State('upload-data', 'filename'),
-              State('upload-data', 'last_modified'))
-def update_output(list_of_contents, list_of_names, list_of_dates):
-   return get_charts()
+              State('upload-data', 'filename'))
+def update_output(content, f_name):
+  # make file name none if the save fails
+  if (content is not None) and \
+     (f_name is not None) and \
+     (not save_csv(content, exports_path, f_name)):
+    f_name = None
+
+  return get_charts(exports_path, f_name)
 
 @app.callback(
   Output('positions_bar', 'figure'),

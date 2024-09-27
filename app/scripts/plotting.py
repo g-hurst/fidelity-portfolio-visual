@@ -1,5 +1,3 @@
-from matplotlib import pyplot as plt
-from matplotlib.widgets import Button
 import plotly.graph_objects as go
 import pandas as pd
 

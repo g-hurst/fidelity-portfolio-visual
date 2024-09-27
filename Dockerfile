@@ -10,5 +10,4 @@ workdir /app
 # Expose the port the Dash app will run on
 EXPOSE 8050
 
-# Command to run your Dash app
-CMD ["python", "app.py"]
+CMD ["gunicorn", "app:server", "-b", "0.0.0.0:8050"]

@@ -1,5 +1,6 @@
 from dash import Dash, dcc, html, Input, Output, State
 import plotly.express as px
+import flask
 
 import os
 import sys
@@ -110,7 +111,8 @@ def get_charts() -> list:
     ]
   )
 
-app = Dash(__name__)
+server = flask.Flask(__name__)
+app = Dash(__name__, server=server)
 app.layout = html.Div(
   className='app',
   children=[
@@ -140,7 +142,7 @@ def update_output(content, f_name):
      (f_name is not None) and \
      (not save_csv(content, exports_path, f_name)):
     f_name = None
-  
+
   global df_portfolio
   df_portfolio = make_dataframe(exports_path, f_name)
   if df_portfolio is not None:
@@ -176,6 +178,7 @@ def update_positions_bar(filter, sort_type):
     )
     return fig
 
+
 if __name__ == '__main__':
   # check to make sure that the app is run from the correct dir
   run_dir = 'app'
@@ -183,5 +186,8 @@ if __name__ == '__main__':
     print(f'Error: must run project from `{run_dir}` directory')
     sys.exit(-1)
 
-  # run app
-  app.run_server(debug=True, host='0.0.0.0', port=8050)
+  app.run_server(
+    debug=True, 
+    host='127.0.0.1', 
+    port=8050
+  )

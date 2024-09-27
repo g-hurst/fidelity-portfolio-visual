@@ -7,5 +7,5 @@ docker-build:
 
 .phony: docker-run
 docker-run: 
-	docker run -p 8050:8050  \
+	docker run -p 8050:8050 \
 		$(CONTAINER_NAME)

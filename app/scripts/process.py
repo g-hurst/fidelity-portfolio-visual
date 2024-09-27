@@ -2,11 +2,9 @@ import pandas as pd
 import numpy as np
 from scipy.optimize import minimize
 
-import types
 import re
 import os
 import datetime
-from collections import OrderedDict
 import json
 import base64
 
@@ -67,36 +65,11 @@ def get_investimet_type(symbol:str, df_sectors:pd.DataFrame) -> str:
     else:
         return 'Other'
 
-# commented out for now in case needed later
-# def select_positions(df:pd.DataFrame, exclude_cash:bool=True, category:str='All') -> dict:
-#     selection = df[['Symbol', 'Current Value', 'Category']]
-#     selection = selection.dropna()
-#     data = OrderedDict()
-#     for (symbol, val, cat) in selection.itertuples(index=False):
-#         if exclude_cash and cat=='Cash':
-#             continue
-#         elif (category=='All') or (category==cat):
-#             if data.get(symbol): data[symbol] += val
-#             else:                data[symbol]  = val
-
-#     return data
-
 def get_sector(symbol, df_sectors):
     if symbol in df_sectors['Symbol'].values:
         return df_sectors[df_sectors['Symbol'] == symbol]['Sector'].values[0]
     else:
         return np.nan
-    
-
-# commented out for now in case needed later
-# def select_sectors(df:pd.DataFrame) -> dict:
-#     selection = df[['Current Value', 'Sector']]
-#     selection = selection.dropna()
-#     data = OrderedDict()
-#     for (val, sect) in selection.itertuples(index=False):
-#         if data.get(sect): data[sect] += val
-#         else:              data[sect]  = val
-#     return data
 
 def make_dataframe(exports_path:str, f_name:str=None) -> pd.DataFrame:
     # load stocks and sector mappings into data frames  

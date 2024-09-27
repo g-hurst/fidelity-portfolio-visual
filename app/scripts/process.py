@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from scipy.optimize import minimize
 
+import types
 import re
 import os
 import datetime
@@ -80,7 +81,7 @@ def make_dataframe():
     exports_path = 'data/portfolio_exports'   
     sectors_path = 'data/sectors/nasdaq_screener_1725826524142.csv'
     df_portfolio = load_portfolio(exports_path)
-    if df_portfolio:
+    if df_portfolio is not None:
         df_sectors   = load_sectors(sectors_path)
         # Clean the data and add some columns to the df
         df_portfolio.drop(['Last Price Change',

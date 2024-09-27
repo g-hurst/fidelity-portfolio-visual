@@ -9,9 +9,7 @@ import datetime
 from collections import OrderedDict
 import json
 
-# TODO: make this more resilliant (will crash if no file is found, but I am currently lazy and accept this tech debt)
-def load_portfolio(path:str) -> pd.DataFrame:
-    
+def load_portfolio(path:str) -> pd.DataFrame:   
     if not os.path.exists(path):
         os.makedirs(path)
         return None 

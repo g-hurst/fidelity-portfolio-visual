@@ -1,16 +1,16 @@
 from dash import Dash, dcc, html, Input, Output, State
 import plotly.express as px
 
+import os
+import sys
+
 from scripts.process import make_dataframe, save_csv
 from scripts.plotting import get_sankey_data
 
 exports_path = 'data/portfolio_exports' 
 df_portfolio = None 
 
-def get_charts(exports_path:str, f_name:str) -> list:
-  global df_portfolio
-
-  df_portfolio = make_dataframe(exports_path, f_name)
+def get_charts() -> list:
   pie_category_fig = px.pie(df_portfolio, names='Category', values='Current Value')
   pie_category_fig.update_layout(
     title=f'Investment Categories',
@@ -140,8 +140,13 @@ def update_output(content, f_name):
      (f_name is not None) and \
      (not save_csv(content, exports_path, f_name)):
     f_name = None
-
-  return get_charts(exports_path, f_name)
+  
+  global df_portfolio
+  df_portfolio = make_dataframe(exports_path, f_name)
+  if df_portfolio is not None:
+    return get_charts()
+  else:
+    return None
 
 @app.callback(
   Output('positions_bar', 'figure'),
@@ -172,4 +177,11 @@ def update_positions_bar(filter, sort_type):
     return fig
 
 if __name__ == '__main__':
+  # check to make sure that the app is run from the correct dir
+  run_dir = 'app'
+  if os.path.basename(os.getcwd()) != run_dir:
+    print(f'Error: must run project from `{run_dir}` directory')
+    sys.exit(-1)
+
+  # run app
   app.run_server(debug=True, host='0.0.0.0', port=8050)

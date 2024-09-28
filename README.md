@@ -14,4 +14,4 @@ To use this tool, a csv from a Fidelity portfolio must first be exported. This c
 
 ![Fildelity Export CSV Button](./images/fidelity_export_button.png)
 
-Save the csv export with the **default name that fidelity gives it**. To spot check, the naming format that fidelity follows the format of `Portfolio_Positions_<MMM-DD-YYYY>.csv`. **Proper name format of the file is critical for the program to run**. 
+Save the csv export with the **default name that fidelity gives it**. This exported file from Fidelity is the file that gets uploaded to the site. To spot check, the naming format that fidelity follows the format of `Portfolio_Positions_<MMM-DD-YYYY>.csv`. **Proper name format of the file is critical for the program to run**. 

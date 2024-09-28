@@ -4,9 +4,10 @@
 
 .body {
     display: flex;
+    align-items: center;
     justify-content: center;
     padding-top: 15px;
-    height: 100vh;
+    height: auto;
     width: 100vw;
 }
 
@@ -25,13 +26,17 @@
     padding-right: 5px;
 }
 
-.upload-data {
-    width:  100%;
+.upload-data  {
+    width:  95%;
     height:  60px;
     line-height:  60px;
     border-width:  1px;
     border-style:  dashed;
     border-radius:  5px;
     text-align:  center ;
-    margin:  10px;
+}
+
+.list-data {
+    height: auto;
+    width: 100%;
 }

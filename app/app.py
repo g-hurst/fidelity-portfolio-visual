@@ -118,18 +118,23 @@ app.layout = html.Div(
   children=[
     html.H1(children='Fidelity Portfolio Visual'),
     html.Div(
-       className='upload-data',
-       children=[
-        dcc.Upload(
-            id='upload-data',
-            children=html.Div([
-                'Drag and Drop or ',
-                html.A('Select Files')
-            ]),
-        ),  
-       ]
+      className='body',
+      children=[
+        html.Div(
+          className='upload-data',
+          children=[
+            dcc.Upload(
+                id='upload-data',
+                children=html.Div([
+                    'Drag and Drop or ',
+                    html.A('Select Files')
+                ]),
+            ),  
+          ]
+        ),
+      ]
     ),
-    html.Div(id='charts')
+    html.Div(id='charts'),
   ]
 )
 
@@ -148,7 +153,7 @@ def update_output(content, f_name):
   if df_portfolio is not None:
     return get_charts()
   else:
-    return None
+    return None,
 
 @app.callback(
   Output('positions_bar', 'figure'),

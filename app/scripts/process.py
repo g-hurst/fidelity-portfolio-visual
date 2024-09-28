@@ -4,7 +4,6 @@ from scipy.optimize import minimize
 
 import re
 import os
-import datetime
 import json
 import base64
 
@@ -22,33 +21,19 @@ def save_csv(content:str, exports_path:str, f_name:str):
         return True
     return False
 
+def get_files(path:str) -> list:
+    return os.listdir(path)
+
 def load_portfolio(path:str, f_name:str=None) -> pd.DataFrame:   
     if not os.path.exists(path):
         os.makedirs(path)
         return None 
-    
-    dated_files = []
-    # get files and sort by date
-    if f_name is None:
-        files = os.listdir(path)
-        for f in files:
-            match = regex_match_name(f)
-            if match:
-                date = datetime.datetime.strptime(match.group(1), '%b-%d-%Y')
-                dated_files.append(
-                    (os.path.join(path, f), date)
-                )
-        dated_files.sort(key=lambda x: x[1], reverse=True)
-    # get specified file from parameter if not None
-    else:
-        # sus tech debt things bcz lazy adding date here
-        dated_files.append((os.path.join(path, f_name), None))
-
-    # return a pandas dataframe of the most recent file
-    if len(dated_files) > 0:
-        return pd.read_csv(dated_files[0][0])  
-    else:
-        return None
+        
+    if (f_name is not None) and (regex_match_name(f_name) is not None):
+        full_path = os.path.join(path, f_name)
+        if os.path.isfile(full_path):
+            return pd.read_csv(full_path)  
+    return None
 
 def load_sectors(path:str) -> pd.DataFrame:
     return pd.read_csv(path)

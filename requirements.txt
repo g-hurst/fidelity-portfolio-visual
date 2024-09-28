@@ -2,6 +2,7 @@ gunicorn
 plotly
 dash
 flask
+yfinance
 
 pandas
 numpy

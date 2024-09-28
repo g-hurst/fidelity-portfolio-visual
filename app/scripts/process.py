@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from scipy.optimize import minimize
+import yfinance as yf
 
 import re
 import os
@@ -79,6 +80,17 @@ def make_dataframe(exports_path:str, f_name:str=None) -> pd.DataFrame:
         df_portfolio['Sector']        = df_portfolio['Symbol'].apply(lambda x: get_sector(x, df_sectors))
     
     return df_portfolio
+
+def get_highs_and_lows(df_portfolio:pd.DataFrame):
+    high_and_low = {
+        'high':None,
+        'low':None
+    }
+
+    #TODO: - get yfinance data from each ticker
+    #      - compile 5, 10, 30, 90, 180, 360 high and low dates
+
+    return high_and_low
 
 if __name__ == '__main__':
     df_portfolio = make_dataframe()

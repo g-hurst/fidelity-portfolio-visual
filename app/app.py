@@ -82,30 +82,9 @@ def get_charts() -> list:
       html.Div(
         className='body',
         children=[
-          html.Div(
-            className='pie-card',
-            children=[
-              dcc.Graph(              
-                figure=pie_account_fig
-                ),
-            ],
-          ),
-          html.Div(
-            className='pie-card',
-            children=[
-              dcc.Graph(              
-                figure=pie_category_fig
-                ),
-            ],
-          ),
-          html.Div(
-            className='pie-card',
-            children=[
-              dcc.Graph(              
-                figure=pie_sector_fig
-                ),
-            ],
-          ),
+          html.Div(className='pie-card', children=[dcc.Graph(figure=pie_account_fig ),],),
+          html.Div(className='pie-card', children=[dcc.Graph(figure=pie_category_fig),],),
+          html.Div(className='pie-card', children=[dcc.Graph(figure=pie_sector_fig  ),],),
         ],
       )
     ]
